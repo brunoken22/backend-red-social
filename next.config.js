@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-
-    experimental: {
+    api: {
+        bodyParser: {
+            sizeLimit: '4mb' // Set desired value here
+        }
+    },    experimental: {
         serverComponentsExternalPackages: ['sequelize', 'sequelize-typescript'],
     }
 }
