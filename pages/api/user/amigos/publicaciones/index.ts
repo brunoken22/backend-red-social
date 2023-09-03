@@ -1,6 +1,6 @@
 import {NextApiRequest, NextApiResponse} from 'next';
 import {getAllPulicacionRedAmigos} from '@/lib/controllers/publicacion';
-import methods from 'micro-method-router';
+const methods = require('micro-method-router');
 import {authMiddelware, handlerCors} from '@/lib/middleware';
 import {apiHandler} from '@/lib/handler';
 type Token = {

@@ -1,6 +1,6 @@
 import {NextApiRequest, NextApiResponse} from 'next';
 import {getAllUser} from '@/lib/controllers/user';
-import methods from 'micro-method-router';
+const methods = require('micro-method-router');
 import {authMiddelware, handlerCors} from '@/lib/middleware';
 import {apiHandler} from '@/lib/handler';
 export const dynamic = 'force-dynamic';

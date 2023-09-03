@@ -2,7 +2,7 @@ import {NextApiRequest, NextApiResponse} from 'next';
 import {signin} from '@/lib/controllers/auth';
 import {apiHandler} from '@/lib/handler';
 import {handlerCors} from '@/lib/middleware';
-import methods from 'micro-method-router';
+const methods = require('micro-method-router');
 
 async function handlerSignin(req: NextApiRequest, res: NextApiResponse) {
   const body = req.body;

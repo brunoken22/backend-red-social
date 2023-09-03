@@ -1,37 +1,60 @@
-import {NextResponse, NextRequest} from 'next/server';
+import {NextApiRequest, NextApiResponse} from 'next';
 import {
   aceptarSolicitud,
   getAllAmigos,
   eliminarAmigo,
 } from '@/lib/controllers/user';
-
-export async function POST(request: NextRequest) {
+const methods = require('micro-method-router');
+import {authMiddelware, handlerCors} from '@/lib/middleware';
+import {apiHandler} from '@/lib/handler';
+type Token = {
+  id: number;
+};
+async function handlerAceptarSolciitud(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  token: Token
+) {
   try {
-    const body = await request.json();
-    const token = request.headers.get('token') as string;
+    const body = req.body;
     const user = await aceptarSolicitud(token, body);
-    return NextResponse.json(user);
+    return res.json(user);
   } catch {
-    return NextResponse.json({message: 'Token Incorrecto'});
+    return res.json({message: 'Token Incorrecto'});
   }
 }
 
-export async function GET(request: NextRequest) {
+async function handlerObtenerAllAmigos(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  token: Token
+) {
   try {
-    const token = request.headers.get('token') as string;
     const user = await getAllAmigos(token);
-    return NextResponse.json(user);
+    return res.json(user);
   } catch {
-    return NextResponse.json({message: 'Token Incorrecto'});
+    return res.json({message: 'Token Incorrecto'});
   }
 }
-export async function DELETE(request: NextRequest) {
+async function handlerEliminarAmigos(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  token: Token
+) {
   try {
-    const token = request.headers.get('token') as string;
-    const body = await request.json();
+    const body = req.body;
     const user = await eliminarAmigo(token, body);
-    return NextResponse.json(user);
+    return res.json(user);
   } catch {
-    return NextResponse.json({message: 'Token Incorrecto'});
+    return res.json({message: 'Token Incorrecto'});
   }
 }
+const met = methods({
+  get: handlerAceptarSolciitud,
+  post: handlerObtenerAllAmigos,
+  delete: handlerEliminarAmigos,
+});
+
+const conect = apiHandler(met);
+const middleware = authMiddelware(conect);
+export default handlerCors(middleware);
