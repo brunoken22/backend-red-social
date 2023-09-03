@@ -3,7 +3,7 @@ import {findOrCreateAuth} from '@/lib/controllers/auth';
 import {findOrCreateUser} from '@/lib/controllers/user';
 import {apiHandler} from '@/lib/handler';
 import {handlerCors} from '@/lib/middleware';
-import methods from 'micro-method-router';
+const methods = require('micro-method-router');
 
 async function findCreateUser(req: NextApiRequest, res: NextApiResponse) {
   const body = req.body;
