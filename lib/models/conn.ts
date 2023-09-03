@@ -16,7 +16,7 @@ async function connection() {
     pool: {
       max: 1, // Número máximo de conexiones en el pool
       min: 0, // Número mínimo de conexiones en el pool
-      idle: 5000, // Tiempo máximo (en milisegundos) que una conexión puede permanecer inactiva en el pool
+      idle: 2000, // Tiempo máximo (en milisegundos) que una conexión puede permanecer inactiva en el pool
     },
   });
   conn.sequelize = sequelize;
