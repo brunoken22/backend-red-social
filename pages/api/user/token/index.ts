@@ -12,7 +12,7 @@ type Token = {
 export async function modiUser(
   req: NextApiRequest,
   res: NextApiResponse,
-  token: string
+  token: Token
 ) {
   const data = await req.body;
   const user = await modUser(token, data);
