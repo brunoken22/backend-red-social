@@ -57,9 +57,8 @@ export async function getUser(tokenData: Token) {
     getAllUserRes,
   };
 }
-export async function modUser(token: string, data: Data) {
+export async function modUser(tokenData: Token, data: Data) {
   try {
-    const tokenData = jwt.verify(token, secrect);
     let imagenUrl;
     if (data.img) {
       imagenUrl = await cloudinary.v2.uploader.upload(data.img, {
@@ -74,7 +73,7 @@ export async function modUser(token: string, data: Data) {
         fullName: data.fullName,
         img: imagenUrl && imagenUrl.secure_url,
       },
-      {where: {id: (tokenData as Token).id}}
+      {where: {id: tokenData.id}}
     );
     return {newuser, img: imagenUrl?.secure_url ? imagenUrl.secure_url : null};
   } catch (e) {
