@@ -9,6 +9,6 @@ function apiHandler(handler: (req: any, res: any, token: any) => {}) {
       console.log('CONECTADO');
       await conn.connection();
     }
-    await handler(req, res, token);
+    handler(req, res, token);
   };
 }

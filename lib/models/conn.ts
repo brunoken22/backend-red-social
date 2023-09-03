@@ -14,9 +14,9 @@ async function connection() {
   const sequelize = new Sequelize(process.env.SEQUELIZE as string, {
     dialectModule: pg,
     pool: {
-      max: 3, // Número máximo de conexiones en el pool
+      max: 1, // Número máximo de conexiones en el pool
       min: 0, // Número mínimo de conexiones en el pool
-      idle: 10000, // Tiempo máximo (en milisegundos) que una conexión puede permanecer inactiva en el pool
+      idle: 5000, // Tiempo máximo (en milisegundos) que una conexión puede permanecer inactiva en el pool
     },
   });
   conn.sequelize = sequelize;
@@ -25,9 +25,10 @@ async function connection() {
   conn.Publicar = publicacion(sequelize);
   conn.SolicitudAmistad = solicitudAmistad(sequelize);
 
-  conn.User.hasOne(conn.Auth);
-  conn.User.hasMany(conn.Publicar);
-  conn.User.hasMany(conn.SolicitudAmistad);
-  await sequelize.sync({alter: true});
+  await conn.User.hasOne(conn.Auth);
+  await conn.User.hasMany(conn.Publicar);
+  await conn.User.hasMany(conn.SolicitudAmistad);
+
+  // await sequelize.sync({force: true});
   conn.initialized = true;
 }
