@@ -38,14 +38,13 @@ export async function signin(data: Data) {
   }
   return [false, null];
 }
-export async function modAuth(token: string, data: Data) {
+export async function modAuth(tokenData: Token, data: Data) {
   try {
-    const tokenData = jwt.verify(token, secrect);
     const auth = await conn.Auth.update(
       {
         password: getSHA256ofString(data.password),
       },
-      {where: {userId: (tokenData as Token).id}}
+      {where: {userId: tokenData.id}}
     );
     return auth;
   } catch (e) {
