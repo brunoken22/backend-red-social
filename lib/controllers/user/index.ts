@@ -78,7 +78,7 @@ export async function modUser(token: string, data: Data) {
     );
     return {newuser, img: imagenUrl?.secure_url ? imagenUrl.secure_url : null};
   } catch (e) {
-    return false;
+    return e;
   }
 }
 export async function solicitudDeAmistad(tokenData: Token, data: Solicitud) {
