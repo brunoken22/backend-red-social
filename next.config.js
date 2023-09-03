@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    compilerOptions: {
+    "compilerOptions": {
         "typeRoots": ["./types", "./node_modules/@types"]
       },
     experimental: {
