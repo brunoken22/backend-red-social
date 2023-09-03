@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import {cloudinary} from '@/lib/cloudinary';
 import {conn} from '@/lib/models/conn';
 import {Op, Sequelize} from 'sequelize';
+import {getAllPulicacionUser, getAllPulicacionRedAmigos} from '../publicacion';
 
 const secrect = process.env.SECRECT as string;
 
@@ -34,14 +35,27 @@ export async function findOrCreateUser(data: Data) {
   return [user, userCreated];
 }
 export async function getUser(tokenData: Token) {
-  try {
-    const user = await conn.User.findOne({
-      where: {id: tokenData.id},
-    });
-    return user;
-  } catch (e) {
-    return false;
-  }
+  const getAllPulicacionUserRes = await getAllPulicacionUser(tokenData);
+  const getAllPulicacionRedAmigosRes = await getAllPulicacionRedAmigos(
+    tokenData
+  );
+  const getSolicitudAmistadRes = await getSolicitudAmistad(tokenData);
+  const getSolicitudAmistadEnviRes = await getSolicitudAmistadEnvi(tokenData);
+  const getAllAmigosRes = await getAllAmigos(tokenData);
+  const getAllUserRes = await getAllUser(tokenData);
+
+  const getUserRes = await conn.User.findOne({
+    where: {id: tokenData.id},
+  });
+  return {
+    getUserRes,
+    getAllPulicacionUserRes,
+    getAllPulicacionRedAmigosRes,
+    getSolicitudAmistadRes,
+    getSolicitudAmistadEnviRes,
+    getAllAmigosRes,
+    getAllUserRes,
+  };
 }
 export async function modUser(token: string, data: Data) {
   try {
@@ -87,76 +101,68 @@ export async function solicitudDeAmistad(tokenData: Token, data: Solicitud) {
   }
 }
 export async function getSolicitudAmistad(tokenData: Token) {
-  try {
-    const solicitudesReci = await conn.SolicitudAmistad.findAll({
+  const solicitudesReci = await conn.SolicitudAmistad.findAll({
+    where: {
+      amigoId: tokenData.id,
+      estado: 'false',
+    },
+  });
+
+  const solicitudesEnv = await conn.SolicitudAmistad.findAll({
+    where: {
+      userId: tokenData.id,
+      estado: 'false',
+    },
+  });
+
+  if (solicitudesReci.length > 0 || solicitudesEnv.length > 0) {
+    const solicitudidsReci = conn.solicitudesReci.map((solicitud: any) =>
+      solicitud.get('userId')
+    );
+    const solicitudidsEnv = solicitudesEnv.map((solicitud: any) =>
+      solicitud.get('amigoId')
+    );
+    const usersReci = await conn.User.findAll({
       where: {
-        amigoId: tokenData.id,
-        estado: 'false',
+        id: {
+          [Op.in]: solicitudidsReci,
+        },
       },
     });
-
-    const solicitudesEnv = await conn.SolicitudAmistad.findAll({
+    const usersEnv = await conn.User.findAll({
       where: {
-        userId: tokenData.id,
-        estado: 'false',
+        id: {
+          [Op.in]: solicitudidsEnv,
+        },
       },
     });
-
-    if (solicitudesReci.length > 0 || solicitudesEnv.length > 0) {
-      const solicitudidsReci = conn.solicitudesReci.map((solicitud: any) =>
-        solicitud.get('userId')
-      );
-      const solicitudidsEnv = solicitudesEnv.map((solicitud: any) =>
-        solicitud.get('amigoId')
-      );
-      const usersReci = await conn.User.findAll({
-        where: {
-          id: {
-            [Op.in]: solicitudidsReci,
-          },
-        },
-      });
-      const usersEnv = await conn.User.findAll({
-        where: {
-          id: {
-            [Op.in]: solicitudidsEnv,
-          },
-        },
-      });
-      return {usersReci, usersEnv};
-    }
-    return [];
-  } catch (e) {
-    return e;
+    return {usersReci, usersEnv};
   }
+  return [];
 }
 export async function getSolicitudAmistadEnvi(tokenData: Token) {
-  try {
-    const solicitudesReci = await conn.SolicitudAmistad.findAll({
+  const solicitudesReci = await conn.SolicitudAmistad.findAll({
+    where: {
+      amigoId: tokenData.id,
+      estado: 'false',
+    },
+  });
+
+  if (solicitudesReci.length > 0) {
+    const solicitudidsReci = solicitudesReci.map((solicitud: any) =>
+      solicitud.get('userId')
+    );
+    const users = await conn.User.findAll({
       where: {
-        amigoId: tokenData.id,
-        estado: 'false',
+        id: {
+          [Op.in]: solicitudidsReci,
+        },
       },
     });
-
-    if (solicitudesReci.length > 0) {
-      const solicitudidsReci = solicitudesReci.map((solicitud: any) =>
-        solicitud.get('userId')
-      );
-      const users = await conn.User.findAll({
-        where: {
-          id: {
-            [Op.in]: solicitudidsReci,
-          },
-        },
-      });
-      return users;
-    }
-
-    return [];
-  } catch (e) {
-    return false;
+    return users;
   }
+
+  return [];
 }
 export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
   try {
@@ -221,100 +227,88 @@ export async function eliminarSolicitud(tokenData: Token, data: Solicitud) {
   }
 }
 export async function eliminarAmigo(tokenData: Token, data: Solicitud) {
-  try {
-    const user1 = await conn.User.update(
-      {amigos: conn.sequelize?.literal(`array_remove(amigos, ${data.userId})`)},
-      {
-        where: {
-          id: tokenData.id,
-        },
-      }
-    );
-    const user2 = await conn.User.update(
-      {
-        amigos: conn.sequelize.literal(`array_remove(amigos, ${tokenData.id})`),
+  const user1 = await conn.User.update(
+    {amigos: conn.sequelize?.literal(`array_remove(amigos, ${data.userId})`)},
+    {
+      where: {
+        id: tokenData.id,
       },
-      {
-        where: {
-          id: data.userId,
-        },
-      }
-    );
-    if (user1 && user2) {
-      return {user1, user2};
     }
-    return 'No existe Amigo';
-  } catch (e) {
-    return e;
+  );
+  const user2 = await conn.User.update(
+    {
+      amigos: conn.sequelize.literal(`array_remove(amigos, ${tokenData.id})`),
+    },
+    {
+      where: {
+        id: data.userId,
+      },
+    }
+  );
+  if (user1 && user2) {
+    return {user1, user2};
   }
+  return [];
 }
 export async function getAllAmigos(tokenData: Token) {
-  try {
-    const user = await conn.User.findByPk(tokenData.id);
-    if (user) {
-      const amigos = user.get('amigos');
-      if (amigos) {
-        const users = await conn.User.findAll({
-          where: {
-            id: amigos,
-          },
-        });
-        return users;
-      }
-      return [];
+  const user = await conn.User.findByPk(tokenData.id);
+  if (user) {
+    const amigos = user.get('amigos');
+    if (amigos) {
+      const users = await conn.User.findAll({
+        where: {
+          id: amigos,
+        },
+      });
+      return users;
     }
-  } catch (e) {
-    return false;
+    return [];
   }
 }
 export async function getAllUser(tokenData: Token) {
-  try {
-    const user = await conn.User.findByPk(tokenData.id);
-    const solicitudesReci = await conn.SolicitudAmistad.findAll({
-      where: {
-        amigoId: tokenData.id,
-        estado: 'false',
-      },
-    });
-    const solicitudesEnv = await conn.SolicitudAmistad.findAll({
-      where: {
-        userId: tokenData.id,
-        estado: 'false',
-      },
-    });
+  const user = await conn.User.findByPk(tokenData.id);
+  const solicitudesReci = await conn.SolicitudAmistad.findAll({
+    where: {
+      amigoId: tokenData.id,
+      estado: 'false',
+    },
+  });
+  const solicitudesEnv = await conn.SolicitudAmistad.findAll({
+    where: {
+      userId: tokenData.id,
+      estado: 'false',
+    },
+  });
 
-    const solicitudIdsReci = solicitudesReci.map((solicitud: any) =>
-      solicitud.get('userId')
-    );
-    const solicitudIdsEnv = solicitudesEnv.map((solicitud: any) =>
-      solicitud.get('amigoId')
-    );
-    if (
-      solicitudIdsReci.length > 0 ||
-      solicitudIdsEnv.length > 0 ||
-      user?.get('amigos')
-    ) {
-      const diferUsers = [
-        ...solicitudIdsEnv,
-        ...(user?.get('amigos') as []),
-        (tokenData as Token).id,
-        ...solicitudIdsReci,
-      ];
+  const solicitudIdsReci = solicitudesReci.map((solicitud: any) =>
+    solicitud.get('userId')
+  );
+  const solicitudIdsEnv = solicitudesEnv.map((solicitud: any) =>
+    solicitud.get('amigoId')
+  );
+  if (
+    solicitudIdsReci.length > 0 ||
+    solicitudIdsEnv.length > 0 ||
+    user?.get('amigos')
+  ) {
+    const diferUsers = [
+      ...solicitudIdsEnv,
+      ...(user?.get('amigos') as []),
+      (tokenData as Token).id,
+      ...solicitudIdsReci,
+    ];
 
-      const usersAll = await conn.User.findAll({
-        where: {
-          id: {
-            [Op.notIn]: diferUsers,
-          },
+    const usersAll = await conn.User.findAll({
+      where: {
+        id: {
+          [Op.notIn]: diferUsers,
         },
-      });
-      if (usersAll) {
-        return usersAll;
-      }
+      },
+    });
+    if (usersAll) {
+      return usersAll;
     }
-
-    return [];
-  } catch (e) {
-    return e;
   }
+
+  return [];
 }

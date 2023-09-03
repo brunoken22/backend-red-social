@@ -15,13 +15,9 @@ async function handlerAceptarSolciitud(
   res: NextApiResponse,
   token: Token
 ) {
-  try {
-    const body = req.body;
-    const user = await aceptarSolicitud(token, body);
-    return res.json(user);
-  } catch {
-    return res.json({message: 'Token Incorrecto'});
-  }
+  const body = req.body;
+  const user = await aceptarSolicitud(token, body);
+  return res.json(user);
 }
 
 async function handlerObtenerAllAmigos(
@@ -29,12 +25,8 @@ async function handlerObtenerAllAmigos(
   res: NextApiResponse,
   token: Token
 ) {
-  try {
-    const user = await getAllAmigos(token);
-    return res.json(user);
-  } catch {
-    return res.json({message: 'Token Incorrecto'});
-  }
+  const user = await getAllAmigos(token);
+  return res.json(user);
 }
 async function handlerEliminarAmigos(
   req: NextApiRequest,

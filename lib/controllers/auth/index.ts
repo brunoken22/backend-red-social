@@ -38,7 +38,6 @@ export async function signin(data: Data) {
   }
   return [false, null];
 }
-
 export async function modAuth(token: string, data: Data) {
   try {
     const tokenData = jwt.verify(token, secrect);
