@@ -285,9 +285,6 @@ export async function getAllUser(tokenData: Token) {
       : [];
 
   const amigosUser = user?.get('amigos') ? (user?.get('amigos') as []) : [];
-  // console.log(solicitudIdsReci);
-  // console.log(solicitudIdsEnv);
-  // console.log(user?.get('amigos') as []);
 
   let diferUsers: any = [];
   if (
@@ -302,10 +299,11 @@ export async function getAllUser(tokenData: Token) {
       ...solicitudIdsReci,
     ];
   }
+  console.log(diferUsers);
   const usersAll = await conn.User.findAll({
     where: {
       id: {
-        [Op.notIn]: diferUsers?.length > 0 ? diferUsers : tokenData.id,
+        [Op.notIn]: diferUsers?.length > 0 ? diferUsers : [tokenData.id],
       },
     },
   });
