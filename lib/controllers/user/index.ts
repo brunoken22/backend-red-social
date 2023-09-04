@@ -1,7 +1,7 @@
 import {cloudinary} from '@/lib/cloudinary';
 import {conn} from '@/lib/models/conn';
 import {Op, Sequelize} from 'sequelize';
-import {getAllPulicacionUser, getAllPulicacionRedAmigos} from '../publicacion';
+import {getAllPulicacionRedAmigos} from '../publicacion';
 
 type Solicitud = {
   amigoId: string;
@@ -35,9 +35,9 @@ export async function getUser(tokenData: Token) {
   const getUserRes = await conn.User.findOne({
     where: {id: tokenData.id},
   });
-  const getAllPulicacionUserRes = await getAllPulicacionUser(tokenData);
   const getAllPulicacionRedAmigosRes = await getAllPulicacionRedAmigos(
-    tokenData,getUserRes.get("amigos")
+    tokenData,
+    getUserRes.get('amigos')
   );
   const getSolicitudAmistadRes = await getSolicitudAmistad(tokenData);
   const getSolicitudAmistadEnviRes = await getSolicitudAmistadEnvi(tokenData);
@@ -46,7 +46,6 @@ export async function getUser(tokenData: Token) {
 
   return {
     getUserRes,
-    getAllPulicacionUserRes,
     getAllPulicacionRedAmigosRes,
     getSolicitudAmistadRes,
     getSolicitudAmistadEnviRes,

@@ -1,6 +1,5 @@
 import {cloudinary} from '@/lib/cloudinary';
 import {conn} from '@/lib/models/conn';
-import {where} from 'sequelize';
 
 type Data = {
   description: string;
@@ -76,30 +75,18 @@ export async function getAllPulicacionRedAmigos(
   amigosUser: []
 ) {
   try {
-    const publicacionAll: Array<Publicacion> = await conn.Publicar.findAll({
-      where: {
-        userId: [amigosUser],
-      },
-    });
-    const userAll: Array<User> = await conn.User.findAll({
-      where: {
-        id: [amigosUser],
-      },
-    });
-    let dataAll = userAll.map((data: any) => data.dataValues);
-    let publiAll = publicacionAll.map((data: any) => data.dataValues);
-    let dataTotal: any = dataAll.map((user: User) => {
-      const id = user.id;
-      const userdatapubli = publiAll.map((publicacion: Publicacion) => {
-        if (id == publicacion.userId) return {...publicacion};
+    if (amigosUser.length > 0) {
+      const publicacionAll: Array<Publicacion> = await conn.Publicar.findAll({
+        where: {
+          userId: [...amigosUser, tokenData.id],
+        },
       });
-      user.publicaciones = [...userdatapubli];
-      return user;
-    });
-    if (amigosUser.length < 1) {
-      return [];
+      if (publicacionAll.length < 1) {
+        return [];
+      }
+      return publicacionAll;
     }
-    return dataAll;
+    return [];
   } catch (e) {
     return [];
   }
