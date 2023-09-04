@@ -1,10 +1,7 @@
-import jwt from 'jsonwebtoken';
 import {cloudinary} from '@/lib/cloudinary';
 import {conn} from '@/lib/models/conn';
 import {Op, Sequelize} from 'sequelize';
 import {getAllPulicacionUser, getAllPulicacionRedAmigos} from '../publicacion';
-
-const secrect = process.env.SECRECT as string;
 
 type Solicitud = {
   amigoId: string;
@@ -43,7 +40,6 @@ export async function getUser(tokenData: Token) {
   const getSolicitudAmistadEnviRes = await getSolicitudAmistadEnvi(tokenData);
   const getAllAmigosRes = await getAllAmigos(tokenData);
   const getAllUserRes = await getAllUser(tokenData);
-
   const getUserRes = await conn.User.findOne({
     where: {id: tokenData.id},
   });
@@ -115,7 +111,7 @@ export async function getSolicitudAmistad(tokenData: Token) {
   });
 
   if (solicitudesReci.length > 0 || solicitudesEnv.length > 0) {
-    const solicitudidsReci = conn.solicitudesReci.map((solicitud: any) =>
+    const solicitudidsReci = solicitudesReci.map((solicitud: any) =>
       solicitud.get('userId')
     );
     const solicitudidsEnv = solicitudesEnv.map((solicitud: any) =>
@@ -288,11 +284,20 @@ export async function getAllUser(tokenData: Token) {
       ? solicitudesEnv.map((solicitud: any) => solicitud.get('amigoId'))
       : [];
 
-  let diferUsers;
-  if (solicitudIdsReci.length > 0 && solicitudIdsEnv.length > 0) {
+  const amigosUser = user?.get('amigos') ? (user?.get('amigos') as []) : [];
+  // console.log(solicitudIdsReci);
+  // console.log(solicitudIdsEnv);
+  // console.log(user?.get('amigos') as []);
+
+  let diferUsers: any = [];
+  if (
+    solicitudIdsReci.length > 0 ||
+    solicitudIdsEnv.length > 0 ||
+    amigosUser.length > 0
+  ) {
     diferUsers = [
       ...solicitudIdsEnv,
-      ...(user?.get('amigos') as []),
+      ...amigosUser,
       tokenData.id,
       ...solicitudIdsReci,
     ];
@@ -300,7 +305,7 @@ export async function getAllUser(tokenData: Token) {
   const usersAll = await conn.User.findAll({
     where: {
       id: {
-        [Op.ne]: tokenData.id,
+        [Op.notIn]: diferUsers?.length > 0 ? diferUsers : tokenData.id,
       },
     },
   });
