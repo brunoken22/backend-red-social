@@ -93,7 +93,6 @@ export async function getAllPulicacionRedAmigos(
       const userdatapubli = publiAll.map((publicacion: Publicacion) => {
         if (id == publicacion.userId) return {...publicacion};
       });
-      // console.log('fdsfaf45trt654', userdatapubli);
       user.publicaciones = [...userdatapubli];
       return user;
     });
@@ -102,6 +101,6 @@ export async function getAllPulicacionRedAmigos(
     }
     return dataAll;
   } catch (e) {
-    return e;
+    return [];
   }
 }
