@@ -42,8 +42,8 @@ async function handlerEliminarAmigos(
   }
 }
 const met = methods({
-  get: handlerAceptarSolciitud,
-  post: handlerObtenerAllAmigos,
+  get: handlerObtenerAllAmigos,
+  post: handlerAceptarSolciitud,
   delete: handlerEliminarAmigos,
 });
 
