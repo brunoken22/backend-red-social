@@ -32,17 +32,18 @@ export async function findOrCreateUser(data: Data) {
   return [user, userCreated];
 }
 export async function getUser(tokenData: Token) {
+  const getUserRes = await conn.User.findOne({
+    where: {id: tokenData.id},
+  });
   const getAllPulicacionUserRes = await getAllPulicacionUser(tokenData);
   const getAllPulicacionRedAmigosRes = await getAllPulicacionRedAmigos(
-    tokenData
+    tokenData,getUserRes.get("amigos")
   );
   const getSolicitudAmistadRes = await getSolicitudAmistad(tokenData);
   const getSolicitudAmistadEnviRes = await getSolicitudAmistadEnvi(tokenData);
   const getAllAmigosRes = await getAllAmigos(tokenData);
   const getAllUserRes = await getAllUser(tokenData);
-  const getUserRes = await conn.User.findOne({
-    where: {id: tokenData.id},
-  });
+
   return {
     getUserRes,
     getAllPulicacionUserRes,

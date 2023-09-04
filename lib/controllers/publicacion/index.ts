@@ -1,5 +1,6 @@
 import {cloudinary} from '@/lib/cloudinary';
 import {conn} from '@/lib/models/conn';
+import {where} from 'sequelize';
 
 type Data = {
   description: string;
@@ -13,6 +14,22 @@ type Token = {
   id: number;
 };
 
+type User = {
+  id: number;
+  fullName: string;
+  email: string;
+  img: string;
+  amigos: [];
+  publicaciones: any;
+};
+type Publicacion = {
+  userId: number;
+  description: string;
+  like: number;
+  img: string;
+  fecha: string;
+  comentarios: [];
+};
 export async function createPublicacion(tokenData: Token, data: Data) {
   try {
     let imagenUrl;
@@ -54,19 +71,37 @@ export async function getAllPulicacionUser(tokenData: Token) {
   }
 }
 
-export async function getAllPulicacionRedAmigos(tokenData: Token) {
+export async function getAllPulicacionRedAmigos(
+  tokenData: Token,
+  amigosUser: []
+) {
   try {
-    const amigosUser = await conn.User.findByPk(tokenData.id);
-    const publicacion = await conn.Publicar.findAll({
+    const publicacionAll: Array<Publicacion> = await conn.Publicar.findAll({
       where: {
-        userId: amigosUser?.get('amigos'),
+        userId: [amigosUser],
       },
     });
-    if (!publicacion) {
+    const userAll: Array<User> = await conn.User.findAll({
+      where: {
+        id: [amigosUser],
+      },
+    });
+    let dataAll = userAll.map((data: any) => data.dataValues);
+    let publiAll = publicacionAll.map((data: any) => data.dataValues);
+    let dataTotal: any = dataAll.map((user: User) => {
+      const id = user.id;
+      const userdatapubli = publiAll.map((publicacion: Publicacion) => {
+        if (id == publicacion.userId) return {...publicacion};
+      });
+      // console.log('fdsfaf45trt654', userdatapubli);
+      user.publicaciones = [...userdatapubli];
+      return user;
+    });
+    if (amigosUser.length < 1) {
       return [];
     }
-    return publicacion;
+    return dataAll;
   } catch (e) {
-    return false;
+    return e;
   }
 }
