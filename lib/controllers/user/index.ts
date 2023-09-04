@@ -279,35 +279,33 @@ export async function getAllUser(tokenData: Token) {
     },
   });
 
-  const solicitudIdsReci = solicitudesReci.map((solicitud: any) =>
-    solicitud.get('userId')
-  );
-  const solicitudIdsEnv = solicitudesEnv.map((solicitud: any) =>
-    solicitud.get('amigoId')
-  );
-  if (
-    solicitudIdsReci.length > 0 ||
-    solicitudIdsEnv.length > 0 ||
-    user?.get('amigos')
-  ) {
-    const diferUsers = [
+  const solicitudIdsReci =
+    solicitudesReci.length > 0
+      ? solicitudesReci.map((solicitud: any) => solicitud.get('userId'))
+      : [];
+  const solicitudIdsEnv =
+    solicitudesEnv.length > 0
+      ? solicitudesEnv.map((solicitud: any) => solicitud.get('amigoId'))
+      : [];
+
+  let diferUsers;
+  if (solicitudIdsReci.length > 0 && solicitudIdsEnv.length > 0) {
+    diferUsers = [
       ...solicitudIdsEnv,
       ...(user?.get('amigos') as []),
-      (tokenData as Token).id,
+      tokenData.id,
       ...solicitudIdsReci,
     ];
-
-    const usersAll = await conn.User.findAll({
-      where: {
-        id: {
-          [Op.notIn]: diferUsers,
-        },
-      },
-    });
-    if (usersAll) {
-      return usersAll;
-    }
   }
-
+  const usersAll = await conn.User.findAll({
+    where: {
+      id: {
+        [Op.ne]: tokenData.id,
+      },
+    },
+  });
+  if (usersAll) {
+    return usersAll;
+  }
   return [];
 }
