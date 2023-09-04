@@ -12,8 +12,8 @@ async function handlerObtenerPublicacionesAmigos(
   token: Token
 ) {
   try {
-    const publicacion = await getAllPulicacionRedAmigos(token);
-    return res.json(publicacion);
+    // const publicacion = await getAllPulicacionRedAmigos(token);
+    return res.json('publicacion');
   } catch {
     return res.json({message: 'Token Incorrecto'});
   }
