@@ -12,6 +12,7 @@ export let conn: any = {
 };
 async function connection() {
   const sequelize = new Sequelize(process.env.SEQUELIZE as string, {
+    dialectModule: pg,
     pool: {
       max: 100,
       min: 0,
