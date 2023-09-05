@@ -74,20 +74,22 @@ export async function getAllPulicacionRedAmigos(
   tokenData: Token,
   amigosUser: []
 ) {
-  try {
-    if (amigosUser.length > 0) {
-      const publicacionAll: Array<Publicacion> = await conn.Publicar.findAll({
-        where: {
-          userId: [...amigosUser, tokenData.id],
-        },
-      });
-      if (publicacionAll.length < 1) {
-        return [];
-      }
-      return publicacionAll;
+  if (amigosUser.length > 0) {
+    const publicacionAll: Array<Publicacion> = await conn.Publicar.findAll({
+      where: {
+        userId: [...amigosUser, tokenData.id],
+      },
+    });
+
+    if (publicacionAll.length < 1) {
+      return [];
     }
-    return [];
-  } catch (e) {
-    return [];
+    return publicacionAll;
   }
+  const publicacionUser: Array<Publicacion> = await conn.Publicar.findAll({
+    where: {
+      userId: tokenData.id,
+    },
+  });
+  return publicacionUser;
 }
