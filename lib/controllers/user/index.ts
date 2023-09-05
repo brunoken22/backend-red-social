@@ -32,26 +32,30 @@ export async function findOrCreateUser(data: Data) {
   return [user, userCreated];
 }
 export async function getUser(tokenData: Token) {
-  const getUserRes = await conn.User.findOne({
-    where: {id: tokenData.id},
-  });
-  const getAllPulicacionRedAmigosRes = await getAllPulicacionRedAmigos(
-    tokenData,
-    getUserRes.get('amigos')
-  );
-  const getSolicitudAmistadRes = await getSolicitudAmistad(tokenData);
-  const getSolicitudAmistadEnviRes = await getSolicitudAmistadEnvi(tokenData);
-  const getAllAmigosRes = await getAllAmigos(tokenData);
-  const getAllUserRes = await getAllUser(tokenData);
+  try {
+    const getUserRes = await conn.User.findOne({
+      where: {id: tokenData.id},
+    });
+    const getAllPulicacionRedAmigosRes = await getAllPulicacionRedAmigos(
+      tokenData,
+      getUserRes.get('amigos')
+    );
+    const getSolicitudAmistadRes = await getSolicitudAmistad(tokenData);
+    const getSolicitudAmistadEnviRes = await getSolicitudAmistadEnvi(tokenData);
+    const getAllAmigosRes = await getAllAmigos(tokenData);
+    const getAllUserRes = await getAllUser(tokenData);
 
-  return {
-    getUserRes,
-    getAllPulicacionRedAmigosRes,
-    getSolicitudAmistadRes,
-    getSolicitudAmistadEnviRes,
-    getAllAmigosRes,
-    getAllUserRes,
-  };
+    return {
+      getUserRes,
+      getAllPulicacionRedAmigosRes,
+      getSolicitudAmistadRes,
+      getSolicitudAmistadEnviRes,
+      getAllAmigosRes,
+      getAllUserRes,
+    };
+  } catch (e) {
+    return e;
+  }
 }
 export async function modUser(tokenData: Token, data: Data) {
   try {
