@@ -74,14 +74,14 @@ export async function getAllPulicacionRedAmigos(
   tokenData: Token,
   amigosUser: []
 ) {
-  if (amigosUser.length > 0) {
+  if (amigosUser?.length > 0) {
     const publicacionAll: Array<Publicacion> = await conn.Publicar.findAll({
       where: {
         userId: [...amigosUser, tokenData.id],
       },
     });
 
-    if (publicacionAll.length < 1) {
+    if (publicacionAll?.length < 1) {
       return [];
     }
     return publicacionAll;
