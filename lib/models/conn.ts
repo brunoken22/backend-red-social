@@ -16,7 +16,7 @@ async function connection() {
     pool: {
       max: 100,
       min: 0,
-      idle: 1000,
+      idle: 500,
     },
   });
   conn.sequelize = sequelize;
