@@ -14,7 +14,7 @@ async function connection() {
   const sequelize = new Sequelize(process.env.SEQUELIZE as string, {
     dialectModule: pg,
     pool: {
-      max: 3,
+      max: 1,
       min: 0,
       idle: 500,
     },
