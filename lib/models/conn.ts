@@ -14,7 +14,7 @@ async function connection() {
   const sequelize = new Sequelize(process.env.SEQUELIZE as string, {
     dialectModule: pg,
     pool: {
-      max: 1, // Número máximo de conexiones en el pool
+      max: 5, // Número máximo de conexiones en el pool
       min: 0, // Número mínimo de conexiones en el pool
       idle: 2000, // Tiempo máximo (en milisegundos) que una conexión puede permanecer inactiva en el pool
     },
