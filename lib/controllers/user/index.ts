@@ -2,21 +2,22 @@ import {cloudinary} from '@/lib/cloudinary';
 import {conn} from '@/lib/models/conn';
 import {Op, Sequelize} from 'sequelize';
 import {getAllPulicacionRedAmigos} from '../publicacion';
+import {getAllAmigos} from '../amigo';
 
-type Solicitud = {
+export type Solicitud = {
   amigoId: string;
   estado: boolean;
   userId?: number;
 };
 
-type Data = {
+export type Data = {
   email: string;
   fullName: string;
   img: string;
   amigos: [];
 };
 
-type Token = {
+export type Token = {
   id: number;
 };
 
@@ -223,45 +224,6 @@ export async function eliminarSolicitud(tokenData: Token, data: Solicitud) {
     return 'No existe solicitud';
   } catch (e) {
     return e;
-  }
-}
-export async function eliminarAmigo(tokenData: Token, data: Solicitud) {
-  const user1 = await conn.User.update(
-    {amigos: conn.sequelize?.literal(`array_remove(amigos, ${data.userId})`)},
-    {
-      where: {
-        id: tokenData.id,
-      },
-    }
-  );
-  const user2 = await conn.User.update(
-    {
-      amigos: conn.sequelize.literal(`array_remove(amigos, ${tokenData.id})`),
-    },
-    {
-      where: {
-        id: data.userId,
-      },
-    }
-  );
-  if (user1 && user2) {
-    return {user1, user2};
-  }
-  return [];
-}
-export async function getAllAmigos(tokenData: Token) {
-  const user = await conn.User.findByPk(tokenData.id);
-  if (user) {
-    const amigos = user.get('amigos');
-    if (amigos) {
-      const users = await conn.User.findAll({
-        where: {
-          id: amigos,
-        },
-      });
-      return users;
-    }
-    return [];
   }
 }
 export async function getAllUser(tokenData: Token) {

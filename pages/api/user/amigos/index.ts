@@ -1,9 +1,6 @@
 import {NextApiRequest, NextApiResponse} from 'next';
-import {
-  aceptarSolicitud,
-  getAllAmigos,
-  eliminarAmigo,
-} from '@/lib/controllers/user';
+import {getAllAmigos, eliminarAmigo} from '@/lib/controllers/amigo';
+import {aceptarSolicitud} from '@/lib/controllers/user';
 const methods = require('micro-method-router');
 import {authMiddelware, handlerCors} from '@/lib/middleware';
 import {apiHandler} from '@/lib/handler';
@@ -37,8 +34,8 @@ async function handlerEliminarAmigos(
     const body = req.body;
     const user = await eliminarAmigo(token, body);
     return res.json(user);
-  } catch {
-    return res.json({message: 'Token Incorrecto'});
+  } catch (e) {
+    return res.json(e);
   }
 }
 const met = methods({

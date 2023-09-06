@@ -29,6 +29,7 @@ type Publicacion = {
   fecha: string;
   comentarios: [];
 };
+
 export async function createPublicacion(tokenData: Token, data: Data) {
   try {
     let imagenUrl;
