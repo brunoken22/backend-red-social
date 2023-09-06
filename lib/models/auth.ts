@@ -1,4 +1,4 @@
-import {Model, DataTypes} from 'sequelize';
+import {DataTypes} from 'sequelize';
 
 export function auth(sequelize: any) {
   return sequelize.define('auth', {
