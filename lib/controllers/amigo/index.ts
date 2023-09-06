@@ -50,10 +50,10 @@ export async function getAmigo(id: number, token: Token) {
     user.get('amigos').length > 0
       ? user.get('amigos').find((e: any) => e == token.id)
       : false;
-
+  console.log(amigo);
   const publicaciones = await getAllPulicacionUser({id});
   if (publicaciones) {
     return {user, publicaciones, amigo};
   }
-  return user;
+  return {user, amigo};
 }
