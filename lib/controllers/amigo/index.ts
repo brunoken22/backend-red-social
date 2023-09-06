@@ -44,11 +44,16 @@ export async function getAllAmigos(tokenData: Token) {
   }
 }
 
-export async function getAmigo(id: number) {
+export async function getAmigo(id: number, token: Token) {
   const user = await conn.User.findByPk(id);
+  const amigo =
+    user.get('amigos').length > 0
+      ? user.get('amigos').find((e: any) => e == token.id)
+      : false;
+
   const publicaciones = await getAllPulicacionUser({id});
   if (publicaciones) {
-    return {user, publicaciones};
+    return {user, publicaciones, amigo};
   }
   return user;
 }
