@@ -5,7 +5,7 @@ import {getAllPulicacionRedAmigos} from '../publicacion';
 import {getAllAmigos} from '../amigo';
 
 export type Solicitud = {
-  amigoId: string;
+  amigoId: number;
   estado: boolean;
   userId?: number;
 };
@@ -42,7 +42,6 @@ export async function getUser(tokenData: Token) {
       getUserRes.get('amigos')
     );
     const getSolicitudAmistadRes = await getSolicitudAmistad(tokenData);
-    const getSolicitudAmistadEnviRes = await getSolicitudAmistadEnvi(tokenData);
     const getAllAmigosRes = await getAllAmigos(tokenData);
     const getAllUserRes = await getAllUser(tokenData);
 
@@ -50,7 +49,6 @@ export async function getUser(tokenData: Token) {
       getUserRes,
       getAllPulicacionRedAmigosRes,
       getSolicitudAmistadRes,
-      getSolicitudAmistadEnviRes,
       getAllAmigosRes,
       getAllUserRes,
     };
@@ -83,10 +81,13 @@ export async function modUser(tokenData: Token, data: Data) {
 }
 export async function solicitudDeAmistad(tokenData: Token, data: Solicitud) {
   try {
+    if (data.amigoId == tokenData.id) return {message: 'Datos Incorrectos'};
     const [solicitudUser, create] = await conn.SolicitudAmistad.findOrCreate({
       where: {
-        amigoId: data.amigoId,
-        userId: tokenData.id,
+        [Op.or]: [
+          {amigoId: data.amigoId, userId: tokenData.id, estado: 'false'},
+          {amigoId: tokenData.id, userId: data.amigoId, estado: 'false'},
+        ],
       },
       defaults: {
         amigoId: data.amigoId,
@@ -97,7 +98,7 @@ export async function solicitudDeAmistad(tokenData: Token, data: Solicitud) {
     if (!create) return 'Ya existe solicitud';
     return solicitudUser;
   } catch (e) {
-    return false;
+    return e;
   }
 }
 export async function getSolicitudAmistad(tokenData: Token) {
@@ -140,36 +141,13 @@ export async function getSolicitudAmistad(tokenData: Token) {
   }
   return [];
 }
-export async function getSolicitudAmistadEnvi(tokenData: Token) {
-  const solicitudesReci = await conn.SolicitudAmistad.findAll({
-    where: {
-      amigoId: tokenData.id,
-      estado: 'false',
-    },
-  });
-
-  if (solicitudesReci.length > 0) {
-    const solicitudidsReci = solicitudesReci.map((solicitud: any) =>
-      solicitud.get('userId')
-    );
-    const users = await conn.User.findAll({
-      where: {
-        id: {
-          [Op.in]: solicitudidsReci,
-        },
-      },
-    });
-    return users;
-  }
-
-  return [];
-}
 export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
   try {
     const solicitud = await conn.SolicitudAmistad.update(
       {estado: data.estado},
       {
         where: {
+          amigoId: tokenData.id,
           userId: data.amigoId,
         },
       }
@@ -196,33 +174,28 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
         return 'Ahora son Amigos';
       }
     }
-    return 'Algo fallo';
-  } catch (e) {
     return false;
+  } catch (e) {
+    return e;
   }
 }
 export async function eliminarSolicitud(tokenData: Token, data: Solicitud) {
   try {
-    const solicitudEnv = await conn.SolicitudAmistad.destroy({
+    const solicitud = await conn.SolicitudAmistad.destroy({
       where: {
-        amigoId: tokenData.id,
-        userId: data.userId,
+        [Op.or]: [
+          {amigoId: data.userId, userId: tokenData.id},
+          {amigoId: tokenData.id, userId: data.userId},
+        ],
       },
       force: true,
     });
-    const solicitudReci = await conn.SolicitudAmistad.destroy({
-      where: {
-        amigoId: data.userId,
-        userId: tokenData.id,
-      },
-      force: true,
-    });
-
-    if (solicitudEnv || solicitudReci) {
-      return 'Solicitud Eliminada';
+    if (solicitud) {
+      return solicitud;
     }
     return 'No existe solicitud';
   } catch (e) {
+    console.log(e);
     return e;
   }
 }

@@ -45,32 +45,36 @@ export async function getAllAmigos(tokenData: Token) {
 }
 
 export async function getAmigo(id: number, token: Token) {
-  const user = await conn.User.findByPk(id);
-  const solicitudesEnviadas = await conn.SolicitudAmistad.findOne({
-    where: {
-      [Op.or]: [
-        {amigoId: token.id, userId: id, estado: 'false'},
-        {amigoId: id, userId: token.id, estado: 'false'},
-      ],
-    },
-  });
+  try {
+    const user = await conn.User.findByPk(id);
+    const solicitudesEnviadas = await conn.SolicitudAmistad.findOne({
+      where: {
+        [Op.or]: [
+          {amigoId: token.id, userId: id, estado: 'false'},
+          {amigoId: id, userId: token.id, estado: 'false'},
+        ],
+      },
+    });
 
-  const amigo =
-    user.get('amigos').length > 0
-      ? user.get('amigos').includes(token.id)
-      : false;
+    const amigo =
+      user.get('amigos')?.length > 0
+        ? user.get('amigos').includes(token.id)
+        : false;
 
-  let valorSolicitud;
-  if (solicitudesEnviadas?.dataValues?.id) {
-    valorSolicitud = 'pendiente';
+    let valorSolicitud;
+    if (solicitudesEnviadas?.dataValues?.id) {
+      valorSolicitud = 'pendiente';
+    }
+    const publicaciones = await getAllPulicacionUser({id});
+    if (publicaciones) {
+      return {
+        user,
+        publicaciones,
+        amigo: valorSolicitud ? valorSolicitud : amigo,
+      };
+    }
+    return {user, amigo: valorSolicitud ? valorSolicitud : amigo};
+  } catch (e) {
+    return e;
   }
-  const publicaciones = await getAllPulicacionUser({id});
-  if (publicaciones) {
-    return {
-      user,
-      publicaciones,
-      amigo: valorSolicitud ? valorSolicitud : amigo,
-    };
-  }
-  return {user, amigo: valorSolicitud ? valorSolicitud : amigo};
 }
