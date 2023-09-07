@@ -36,6 +36,9 @@ async function handlerEliminarSolicitud(
   token: Token
 ) {
   const body = await req.body;
+  console.log('FDS', body);
+  console.log('FDS', token);
+
   const user = await eliminarSolicitud(token, body);
   return res.json(user);
 }

@@ -188,7 +188,6 @@ export async function eliminarSolicitud(tokenData: Token, data: Solicitud) {
           {amigoId: tokenData.id, userId: data.userId},
         ],
       },
-      force: true,
     });
     if (solicitud) {
       return solicitud;
