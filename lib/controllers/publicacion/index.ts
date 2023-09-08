@@ -125,7 +125,7 @@ export async function likePublicacion(tokenData: Token, data: DataLike) {
 
     if (data.tipo == 'disLike') {
       const publi = await conn.Publicar.update(
-        {like: Sequelize.literal(`array_remove(like, ${tokenData.id})`)},
+        {like: Sequelize.literal(`array_remove("like", ${tokenData.id})`)},
         {
           where: {
             id: data.id,
