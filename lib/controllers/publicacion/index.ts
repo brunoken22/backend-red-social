@@ -1,5 +1,6 @@
 import {cloudinary} from '@/lib/cloudinary';
 import {conn} from '@/lib/models/conn';
+import {Sequelize} from 'sequelize';
 
 type Data = {
   description: string;
@@ -29,7 +30,10 @@ type Publicacion = {
   fecha: string;
   comentarios: [];
 };
-
+export type DataLike = {
+  id: number;
+  tipo: string;
+};
 export async function createPublicacion(tokenData: Token, data: Data) {
   try {
     let imagenUrl;
@@ -42,7 +46,7 @@ export async function createPublicacion(tokenData: Token, data: Data) {
     }
     const publicacion = await conn.Publicar.create({
       description: data.description,
-      like: Number(data.like),
+      like: [],
       img: imagenUrl?.secure_url ? imagenUrl.secure_url : '',
       comentarios: data.comentarios,
       fecha: data.fecha,
@@ -51,7 +55,8 @@ export async function createPublicacion(tokenData: Token, data: Data) {
 
     return publicacion;
   } catch (e) {
-    return false;
+    console.log(e);
+    return e;
   }
 }
 
@@ -93,4 +98,45 @@ export async function getAllPulicacionRedAmigos(
     },
   });
   return publicacionUser;
+}
+
+export async function likePublicacion(tokenData: Token, data: DataLike) {
+  try {
+    const publiLikeExis = await conn.Publicar.findByPk(data.id);
+    if (
+      publiLikeExis.get('like').length > 0 &&
+      publiLikeExis.get('like').includes(tokenData.id)
+    )
+      return 'Ya le distes Like';
+    if (data.tipo == 'like') {
+      const publi = await conn.Publicar.update(
+        {like: Sequelize.literal(`array_append("like", ${tokenData.id})`)},
+        {
+          where: {
+            id: data.id,
+          },
+        }
+      );
+      console.log('hola', publi);
+      if (publi) {
+        return 'Like con exito';
+      }
+    }
+
+    if (data.tipo == 'disLike') {
+      const publi = await conn.Publicar.update(
+        {like: Sequelize.literal(`array_remove(like, ${tokenData.id})`)},
+        {
+          where: {
+            id: data.id,
+          },
+        }
+      );
+      if (publi) {
+        return 'DisLike con exito';
+      }
+    }
+  } catch (e) {
+    return e;
+  }
 }
