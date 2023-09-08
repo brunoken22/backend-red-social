@@ -103,12 +103,13 @@ export async function getAllPulicacionRedAmigos(
 export async function likePublicacion(tokenData: Token, data: DataLike) {
   try {
     const publiLikeExis = await conn.Publicar.findByPk(data.id);
-    if (
-      publiLikeExis.get('like').length > 0 &&
-      publiLikeExis.get('like').includes(tokenData.id)
-    )
-      return 'Ya le distes Like';
+
     if (data.tipo == 'like') {
+      if (
+        publiLikeExis.get('like').length > 0 &&
+        publiLikeExis.get('like').includes(tokenData.id)
+      )
+        return 'Ya le distes Like';
       const publi = await conn.Publicar.update(
         {like: Sequelize.literal(`array_append("like", ${tokenData.id})`)},
         {
