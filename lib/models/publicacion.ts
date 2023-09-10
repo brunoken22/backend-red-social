@@ -7,5 +7,6 @@ export function publicacion(sequelize: any) {
     img: DataTypes.STRING,
     fecha: DataTypes.STRING,
     comentarios: DataTypes.ARRAY(DataTypes.JSON),
+    open: DataTypes.BOOLEAN,
   });
 }
