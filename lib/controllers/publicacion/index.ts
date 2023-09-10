@@ -14,19 +14,12 @@ type Token = {
   id: number;
 };
 
-type User = {
-  id: number;
-  fullName: string;
-  email: string;
-  img: string;
-  amigos: [];
-  publicaciones: any;
-};
 type Comentario = {
   fullName: string;
   description: string;
   img: string;
   userId: number;
+  open?: boolean;
 };
 type Publicacion = {
   userId: number;
@@ -124,7 +117,6 @@ export async function likePublicacion(tokenData: Token, data: DataLike) {
           },
         }
       );
-      console.log('hola', publi);
       if (publi) {
         return 'Like con exito';
       }
@@ -151,11 +143,28 @@ export async function likePublicacion(tokenData: Token, data: DataLike) {
 export async function comentarioPublicacion(id: string, data: Comentario) {
   try {
     const publicar = await conn.Publicar.findByPk(id);
+    if (!data.description) {
+      const modComent = await conn.Publicar.update(
+        {open: data.open},
+        {
+          where: {
+            id,
+          },
+        }
+      );
+      if (modComent) {
+        return modComent;
+      }
+    }
     if (publicar) {
       const comentariosArray = publicar.getDataValue('comentarios');
       comentariosArray.push(data);
+
       const modComent = await conn.Publicar.update(
-        {comentarios: comentariosArray},
+        {
+          comentarios: comentariosArray,
+          open: data.userId == publicar.getDataValue('userId') ? false : true,
+        },
         {
           where: {
             id,
