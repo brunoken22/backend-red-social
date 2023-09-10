@@ -29,6 +29,6 @@ async function connection() {
   await conn.User.hasMany(conn.Publicar);
   await conn.User.hasMany(conn.SolicitudAmistad);
 
-  // await sequelize.sync({force: true});
+  await sequelize.sync({alter: true});
   conn.initialized = true;
 }

@@ -22,6 +22,12 @@ type User = {
   amigos: [];
   publicaciones: any;
 };
+type Comentario = {
+  fullName: string;
+  description: string;
+  img: string;
+  userId: number;
+};
 type Publicacion = {
   userId: number;
   description: string;
@@ -137,6 +143,31 @@ export async function likePublicacion(tokenData: Token, data: DataLike) {
         return 'DisLike con exito';
       }
     }
+  } catch (e) {
+    return e;
+  }
+}
+
+export async function comentarioPublicacion(id: string, data: Comentario) {
+  try {
+    const publicar = await conn.Publicar.findByPk(id);
+    if (publicar) {
+      const comentariosArray = publicar.getDataValue('comentarios');
+      comentariosArray.push(data);
+      const modComent = await publicar.update(
+        {comentarios: comentariosArray},
+        {
+          where: {
+            id,
+          },
+        }
+      );
+      if (modComent) {
+        return modComent;
+      }
+      return 'Error al comentar';
+    }
+    return 'No se encontro publicacion';
   } catch (e) {
     return e;
   }

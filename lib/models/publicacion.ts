@@ -6,6 +6,6 @@ export function publicacion(sequelize: any) {
     like: DataTypes.ARRAY(DataTypes.INTEGER),
     img: DataTypes.STRING,
     fecha: DataTypes.STRING,
-    comentarios: DataTypes.ARRAY(DataTypes.JSONB),
+    comentarios: DataTypes.ARRAY(DataTypes.JSON),
   });
 }
