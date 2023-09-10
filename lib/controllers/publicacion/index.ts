@@ -154,7 +154,7 @@ export async function comentarioPublicacion(id: string, data: Comentario) {
     if (publicar) {
       const comentariosArray = publicar.getDataValue('comentarios');
       comentariosArray.push(data);
-      const modComent = await publicar.update(
+      const modComent = await conn.Publicar.update(
         {comentarios: comentariosArray},
         {
           where: {
