@@ -163,7 +163,7 @@ export async function comentarioPublicacion(id: string, data: Comentario) {
       const modComent = await conn.Publicar.update(
         {
           comentarios: comentariosArray,
-          open: data.userId == publicar.getDataValue('userId') ? false : true,
+          open: data.open,
         },
         {
           where: {
