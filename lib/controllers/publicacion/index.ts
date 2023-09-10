@@ -181,3 +181,15 @@ export async function comentarioPublicacion(id: string, data: Comentario) {
     return e;
   }
 }
+
+export async function getPublicacionId(id: string) {
+  try {
+    const publicacion = await conn.Publicar.findByPk(id);
+    if (!publicacion) {
+      return false;
+    }
+    return publicacion;
+  } catch (e) {
+    return e;
+  }
+}

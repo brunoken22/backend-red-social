@@ -2,6 +2,7 @@ import {NextApiRequest, NextApiResponse} from 'next';
 import {
   likePublicacion,
   comentarioPublicacion,
+  getPublicacionId,
 } from '@/lib/controllers/publicacion';
 const methods = require('micro-method-router');
 import {authMiddelware, handlerCors} from '@/lib/middleware';
@@ -42,9 +43,23 @@ async function handlerComentarioPublicacion(
     return res.json(e);
   }
 }
+async function handlerGetPublicacionId(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  token: Token
+) {
+  try {
+    const {id} = req.query;
+    const publicacion = await getPublicacionId(id as string);
+    return res.json(publicacion);
+  } catch (e) {
+    return res.json(e);
+  }
+}
 const met = methods({
   post: handlerLikePubli,
   patch: handlerComentarioPublicacion,
+  get: handlerGetPublicacionId,
 });
 
 const conect = apiHandler(met);
