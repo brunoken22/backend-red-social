@@ -164,7 +164,7 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
       });
       await conn.User.update(
         {
-          rtdb: Sequelize.literal(`array_append("rtdb",' ${idRoom}')`),
+          rtdb: Sequelize.literal(`array_append("rtdb",'${idRoom}')`),
         },
         {
           where: {
