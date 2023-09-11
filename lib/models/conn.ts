@@ -12,6 +12,7 @@ export let conn: any = {
   sequelize: null,
   firebaseRTDB: null,
 };
+
 async function connection() {
   const sequelize = new Sequelize(process.env.SEQUELIZE as string, {
     dialectModule: pg,
