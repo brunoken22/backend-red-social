@@ -4,11 +4,13 @@ import {auth} from './auth';
 import {UserModel} from './user';
 import {publicacion} from './publicacion';
 import {solicitudAmistad} from './solicitud-amistad';
+import admin from 'firebase-admin';
 
 export let conn: any = {
   initialized: false,
   connection,
   sequelize: null,
+  firebaseRTDB: null,
 };
 async function connection() {
   const sequelize = new Sequelize(process.env.SEQUELIZE as string, {
@@ -19,6 +21,16 @@ async function connection() {
       idle: 500,
     },
   });
+  const serviceAccount = JSON.parse(process.env.FIREBASE_CONNECTION as string);
+  if (!admin.apps.length) {
+    console.log('Conectado a firebase');
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: process.env.FIREBASE_RTDB,
+    });
+  }
+  conn.firebaseRTDB = admin.database();
   conn.sequelize = sequelize;
   conn.Auth = auth(sequelize);
   conn.User = UserModel(sequelize);

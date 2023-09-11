@@ -3,13 +3,19 @@ import {conn} from '@/lib/models/conn';
 import {Op, Sequelize} from 'sequelize';
 import {getAllPulicacionRedAmigos} from '../publicacion';
 import {getAllAmigos} from '../amigo';
+import {nanoid} from 'nanoid';
 
 export type Solicitud = {
   amigoId: number;
   estado: boolean;
   userId?: number;
+  rtdb?: string;
 };
-
+export type Rooms = {
+  message: string;
+  fullName: string;
+  rtdb?: string;
+};
 export type Data = {
   email: string;
   fullName: string;
@@ -143,6 +149,33 @@ export async function getSolicitudAmistad(tokenData: Token) {
 }
 export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
   try {
+    const userData = await conn.User.findByPk(tokenData.id);
+    const amigoIdData = await conn.User.findByPk(data.amigoId);
+    const existeComun = userData
+      ?.get('rtdb')
+      .some((item: string) => amigoIdData.get('rtdb').includes(item));
+
+    if (!existeComun) {
+      const idRoom = nanoid(10);
+      const usersCollection = conn.firebaseRTDB.ref('/rooms/' + idRoom);
+      await usersCollection.set({
+        userId: userData.get('id'),
+        amigoId: data.amigoId,
+      });
+      await conn.User.update(
+        {
+          rtdb: Sequelize.literal(`array_append("rtdb",' ${idRoom}')`),
+        },
+        {
+          where: {
+            id: {
+              [Op.in]: [tokenData.id, data.amigoId],
+            },
+          },
+        }
+      );
+    }
+
     const solicitud = await conn.SolicitudAmistad.update(
       {estado: data.estado},
       {
@@ -155,7 +188,7 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
     if (solicitud) {
       const ids = [{user: tokenData.id}, {user: data.amigoId}];
       const user1 = await conn.User.update(
-        {amigos: Sequelize.literal(`array_append(amigos, ${ids[1].user})`)},
+        {amigos: Sequelize.literal(`array_append("amigos", ${ids[1].user})`)},
         {
           where: {
             id: ids[0].user,
@@ -163,7 +196,7 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
         }
       );
       const user2 = await conn.User.update(
-        {amigos: Sequelize.literal(`array_append(amigos, ${ids[0].user})`)},
+        {amigos: Sequelize.literal(`array_append("amigos", ${ids[0].user})`)},
         {
           where: {
             id: ids[1].user,
@@ -176,6 +209,7 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
     }
     return false;
   } catch (e) {
+    console.log(e);
     return e;
   }
 }
@@ -249,4 +283,18 @@ export async function getAllUser(tokenData: Token) {
     return usersAll;
   }
   return [];
+}
+export async function chatAmigo(tokenData: Token, data: Rooms) {
+  try {
+    const usersCollection = conn.firebaseRTDB.ref(
+      '/rooms/' + data.rtdb + '/messages'
+    );
+    await usersCollection.push({
+      message: data.message,
+      fullName: data.fullName,
+    });
+    return true;
+  } catch (e) {
+    return e;
+  }
 }
