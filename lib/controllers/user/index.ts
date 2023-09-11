@@ -153,7 +153,7 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
     const amigoIdData = await conn.User.findByPk(data.amigoId);
     const existeComun = userData
       ?.get('rtdb')
-      .some((item: string) => amigoIdData.get('rtdb').includes(item));
+      ?.some((item: string) => amigoIdData.get('rtdb')?.includes(item));
 
     if (!existeComun) {
       const idRoom = nanoid(10);
@@ -291,7 +291,7 @@ export async function chatAmigo(tokenData: Token, data: Rooms) {
     );
     await usersCollection.push({
       message: data.message,
-      fullName: data.fullName,
+      id: tokenData.id,
     });
     return true;
   } catch (e) {
