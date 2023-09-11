@@ -6,16 +6,20 @@ import {handlerCors} from '@/lib/middleware';
 const methods = require('micro-method-router');
 
 async function findCreateUser(req: NextApiRequest, res: NextApiResponse) {
-  const body = req.body;
-  if (!body) {
-    return res.json({message: 'Faltan datos'});
+  try {
+    const body = req.body;
+    if (!body) {
+      return res.json({message: 'Faltan datos'});
+    }
+    const [user, userCreated] = await findOrCreateUser(body);
+    if (userCreated) {
+      const [auth, token] = await findOrCreateAuth((user as any).id, body);
+      return res.json({user, token});
+    }
+    return res.json('Usuario Registrado');
+  } catch (e) {
+    res.json(e);
   }
-  const [user, userCreated] = await findOrCreateUser(body);
-  if (userCreated) {
-    const [auth, token] = await findOrCreateAuth((user as any).id, body);
-    return res.json({user, token});
-  }
-  return res.json('Usuario Registrado');
 }
 const met = methods({
   post: findCreateUser,
