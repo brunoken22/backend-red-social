@@ -4,7 +4,7 @@ import {Op, Sequelize} from 'sequelize';
 import {getAllPulicacionRedAmigos} from '../publicacion';
 import {getAllAmigos} from '../amigo';
 import {nanoid} from 'nanoid';
-
+import {index} from '@/lib/algolia';
 export type Solicitud = {
   amigoId: number;
   estado: boolean;
@@ -297,4 +297,9 @@ export async function chatAmigo(tokenData: Token, data: Rooms) {
   } catch (e) {
     return e;
   }
+}
+
+export async function searchUser(name: string, tokenData: Token) {
+  const resultData = index.search(name);
+  return resultData;
 }
