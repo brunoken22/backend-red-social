@@ -13,7 +13,7 @@ export type Solicitud = {
 };
 export type Rooms = {
   message: string;
-  fullName: string;
+  read: boolean;
   rtdb?: string;
 };
 export type Data = {
@@ -291,6 +291,7 @@ export async function chatAmigo(tokenData: Token, data: Rooms) {
     );
     await usersCollection.push({
       message: data.message,
+      read: data.read,
       id: tokenData.id,
     });
     return true;
