@@ -22,7 +22,8 @@ async function handlerObtenerAllAmigos(
   res: NextApiResponse,
   token: Token
 ) {
-  const user = await getAllAmigos(token);
+  const {limit, offset} = req.query;
+  const user = await getAllAmigos(token, limit as string, offset as string);
   return res.json(user);
 }
 async function handlerEliminarAmigos(

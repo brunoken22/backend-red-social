@@ -28,12 +28,20 @@ export async function eliminarAmigo(tokenData: Token, data: Solicitud) {
   return [];
 }
 
-export async function getAllAmigos(tokenData: Token) {
+export async function getAllAmigos(
+  tokenData: Token,
+  limit: string,
+  offset: string
+) {
   const user = await conn.User.findByPk(tokenData.id);
   if (user) {
     const amigos = user.get('amigos');
     if (amigos) {
+      console.log('LIMIT', limit, offset);
+
       const users = await conn.User.findAll({
+        limit: Number(limit) > 10 ? 10 : limit,
+        offset: offset,
         where: {
           id: amigos,
         },

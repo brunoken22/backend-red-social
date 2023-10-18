@@ -145,7 +145,7 @@ export async function comentarioPublicacion(id: string, data: Comentario) {
     const publicar = await conn.Publicar.findByPk(id);
     if (!data.description) {
       const modComent = await conn.Publicar.update(
-        {open: data.open},
+        {open: data.open}, 
         {
           where: {
             id,
