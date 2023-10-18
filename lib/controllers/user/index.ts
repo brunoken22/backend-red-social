@@ -48,14 +48,12 @@ export async function getUser(tokenData: Token) {
       getUserRes.get('amigos')
     );
     const getSolicitudAmistadRes = await getSolicitudAmistad(tokenData);
-    const getAllAmigosRes = await getAllAmigos(tokenData);
     const getAllUserRes = await getAllUser(tokenData);
 
     return {
       getUserRes,
       getAllPulicacionRedAmigosRes,
       getSolicitudAmistadRes,
-      getAllAmigosRes,
       getAllUserRes,
     };
   } catch (e) {
