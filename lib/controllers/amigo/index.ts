@@ -38,8 +38,8 @@ export async function getAllAmigos(
     const amigos = user.get('amigos');
     if (amigos) {
       const users = await conn.User.findAll({
-        limit: Number(limit) > 10 ? 10 : limit,
-        offset: offset,
+        // limit: Number(limit) > 10 ? 10 : limit,
+        // offset: offset,
         where: {
           id: amigos,
         },

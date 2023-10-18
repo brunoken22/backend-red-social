@@ -80,29 +80,36 @@ export async function getAllPulicacionRedAmigos(
   limit: string,
   offset: string
 ) {
-  const getUserRes = await conn.User.findOne({
-    where: {id: tokenData.id},
-  });
-  if (getUserRes.amigos.length > 0) {
-    const publicacionAll: Array<Publicacion> = await conn.Publicar.findAll({
-      limit: Number(limit) > 15 ? 15 : limit,
-      offset: offset,
-      where: {
-        userId: [...getUserRes.amigos, tokenData.id],
-      },
+  try {
+    const getUserRes = await conn.User.findOne({
+      where: {id: tokenData.id},
     });
+    if (getUserRes.amigos.length > 0) {
+      const publicacionAll: Array<Publicacion> = await conn.Publicar.findAll({
+        // limit: Number(limit) > 15 ? 15 : limit,
+        // offset: offset,
+        where: {
+          userId: [...getUserRes.amigos, tokenData.id],
+        },
+      });
 
-    if (publicacionAll?.length < 1) {
-      return [];
+      if (publicacionAll?.length < 1) {
+        return [];
+      }
+      return publicacionAll;
     }
-    return publicacionAll;
+    const publicacionUser: Array<Publicacion> = await conn.Publicar.findAll({
+      // limit: Number(limit) > 15 ? 15 : limit,
+      // offset: offset,
+      where: {
+        userId: tokenData.id,
+      },
+      // include: await conn.User,
+    });
+    return publicacionUser;
+  } catch (e) {
+    return e;
   }
-  const publicacionUser: Array<Publicacion> = await conn.Publicar.findAll({
-    where: {
-      userId: tokenData.id,
-    },
-  });
-  return publicacionUser;
 }
 
 export async function likePublicacion(tokenData: Token, data: DataLike) {

@@ -40,8 +40,9 @@ async function connection() {
 
   await conn.User.hasOne(conn.Auth);
   await conn.User.hasMany(conn.Publicar);
+  await conn.Publicar.hasMany(conn.User, {foreignKey: 'userId'});
   await conn.User.hasMany(conn.SolicitudAmistad);
 
-  // await sequelize.sync({alter: true});
+  await sequelize.sync({alter: true});
   conn.initialized = true;
 }
