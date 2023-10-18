@@ -1,7 +1,7 @@
 import {conn} from '@/lib/models/conn';
 import {Op, Sequelize} from 'sequelize';
-import {getAllPulicacionUser} from '../publicacion';
 import {Solicitud, Data, Token, getUser} from '../user';
+import {getAllPulicacionUser} from '../publicacion';
 
 export async function eliminarAmigo(tokenData: Token, data: Solicitud) {
   const user1 = await conn.User.update(
@@ -37,8 +37,6 @@ export async function getAllAmigos(
   if (user) {
     const amigos = user.get('amigos');
     if (amigos) {
-      console.log('LIMIT', limit, offset);
-
       const users = await conn.User.findAll({
         limit: Number(limit) > 10 ? 10 : limit,
         offset: offset,

@@ -77,12 +77,18 @@ export async function getAllPulicacionUser(tokenData: Token) {
 
 export async function getAllPulicacionRedAmigos(
   tokenData: Token,
-  amigosUser: []
+  limit: string,
+  offset: string
 ) {
-  if (amigosUser?.length > 0) {
+  const getUserRes = await conn.User.findOne({
+    where: {id: tokenData.id},
+  });
+  if (getUserRes.amigos.length > 0) {
     const publicacionAll: Array<Publicacion> = await conn.Publicar.findAll({
+      limit: Number(limit) > 15 ? 15 : limit,
+      offset: offset,
       where: {
-        userId: [...amigosUser, tokenData.id],
+        userId: [...getUserRes.amigos, tokenData.id],
       },
     });
 
@@ -145,7 +151,7 @@ export async function comentarioPublicacion(id: string, data: Comentario) {
     const publicar = await conn.Publicar.findByPk(id);
     if (!data.description) {
       const modComent = await conn.Publicar.update(
-        {open: data.open}, 
+        {open: data.open},
         {
           where: {
             id,

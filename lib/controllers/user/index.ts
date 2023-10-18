@@ -43,16 +43,12 @@ export async function getUser(tokenData: Token) {
     const getUserRes = await conn.User.findOne({
       where: {id: tokenData.id},
     });
-    const getAllPulicacionRedAmigosRes = await getAllPulicacionRedAmigos(
-      tokenData,
-      getUserRes.get('amigos')
-    );
+
     const getSolicitudAmistadRes = await getSolicitudAmistad(tokenData);
     const getAllUserRes = await getAllUser(tokenData);
 
     return {
       getUserRes,
-      getAllPulicacionRedAmigosRes,
       getSolicitudAmistadRes,
       getAllUserRes,
     };
