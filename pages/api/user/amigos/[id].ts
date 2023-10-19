@@ -14,7 +14,7 @@ async function handlerObtenerAmigoId(
 ) {
   try {
     const {id, offset} = req.query;
-    const amigo: any = await getAmigo(Number(id), token, offset);
+    const amigo: any = await getAmigo(Number(id), token, offset as string);
     if (!amigo.user.id) res.json(false);
     return res.json(amigo);
   } catch (e) {
