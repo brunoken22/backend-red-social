@@ -23,22 +23,9 @@ async function handlerObtenerPublicacionesAmigos(
   }
 }
 
-// async function handlerLikePubli(
-//   req: NextApiRequest,
-//   res: NextApiResponse,
-//   token: Token
-// ) {
-//   try {
-//     const data = req.body;
-//     const publicacion = await likePublicacion(token, data);
-//     return res.json(publicacion);
-//   } catch (e) {
-//     return res.json(e);
-//   }
-// }
 const met = methods({
   get: handlerObtenerPublicacionesAmigos,
-  // post: handlerLikePubli,
+
 });
 
 const conect = apiHandler(met);
