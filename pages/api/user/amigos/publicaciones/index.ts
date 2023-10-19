@@ -1,5 +1,5 @@
 import {NextApiRequest, NextApiResponse} from 'next';
-import {likePublicacion} from '@/lib/controllers/publicacion';
+import {getAllPulicacionRedAmigos} from '@/lib/controllers/publicacion';
 const methods = require('micro-method-router');
 import {authMiddelware, handlerCors} from '@/lib/middleware';
 import {apiHandler} from '@/lib/handler';
@@ -12,8 +12,12 @@ async function handlerObtenerPublicacionesAmigos(
   token: Token
 ) {
   try {
-    // const publicacion = await getAllPulicacionRedAmigos(token);
-    return res.json('publicacion');
+    const {offset} = req.query;
+    const publicacion = await getAllPulicacionRedAmigos(
+      token,
+      offset as string
+    );
+    return res.json(publicacion);
   } catch {
     return res.json({message: 'Token Incorrecto'});
   }

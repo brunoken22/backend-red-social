@@ -1,7 +1,7 @@
 import {NextApiRequest, NextApiResponse} from 'next';
 import {
   createPublicacion,
-  getAllPulicacionRedAmigos,
+  getAllPulicacionUser,
 } from '@/lib/controllers/publicacion';
 const methods = require('micro-method-router');
 import {authMiddelware, handlerCors} from '@/lib/middleware';
@@ -29,12 +29,8 @@ async function handlerObtenerPubli(
   token: Token
 ) {
   try {
-    const {limit, offset} = req.query;
-    const publicacion = await getAllPulicacionRedAmigos(
-      token,
-      limit as string,
-      offset as string
-    );
+    const {offset} = req.query;
+    const publicacion = await getAllPulicacionUser(token, offset as string);
     return res.json(publicacion);
   } catch {
     return res.json({message: 'Token Incorrecto'});

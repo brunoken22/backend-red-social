@@ -50,7 +50,7 @@ export async function getAllAmigos(
   }
 }
 
-export async function getAmigo(id: number, token: Token) {
+export async function getAmigo(id: number, token: Token, offset: string) {
   try {
     const user = await conn.User.findByPk(id);
     const solicitudesEnviadas = await conn.SolicitudAmistad.findOne({
@@ -71,7 +71,7 @@ export async function getAmigo(id: number, token: Token) {
     if (solicitudesEnviadas?.dataValues?.id) {
       valorSolicitud = 'pendiente';
     }
-    const publicaciones = await getAllPulicacionUser({id});
+    const publicaciones = await getAllPulicacionUser({id}, offset);
     if (publicaciones) {
       return {
         user,

@@ -59,12 +59,15 @@ export async function createPublicacion(tokenData: Token, data: Data) {
   }
 }
 
-export async function getAllPulicacionUser(tokenData: Token) {
+export async function getAllPulicacionUser(tokenData: Token, offset: string) {
   try {
     const publicacion = await conn.Publicar.findAll({
+      limit: 10,
+      offset: Number(offset),
       where: {
         userId: tokenData.id,
       },
+      order: [['createdAt', 'DESC']],
     });
     if (!publicacion) {
       return [];
@@ -77,7 +80,6 @@ export async function getAllPulicacionUser(tokenData: Token) {
 
 export async function getAllPulicacionRedAmigos(
   tokenData: Token,
-  limit: string,
   offset: string
 ) {
   try {
@@ -86,11 +88,12 @@ export async function getAllPulicacionRedAmigos(
     });
     if (getUserRes.amigos.length > 0) {
       const publicacionAll: Array<Publicacion> = await conn.Publicar.findAll({
-        // limit: Number(limit) > 15 ? 15 : limit,
-        // offset: offset,
+        limit: 10,
+        offset: Number(offset),
         where: {
           userId: [...getUserRes.amigos, tokenData.id],
         },
+        order: [['createdAt', 'DESC']],
       });
 
       if (publicacionAll?.length < 1) {
@@ -99,12 +102,12 @@ export async function getAllPulicacionRedAmigos(
       return publicacionAll;
     }
     const publicacionUser: Array<Publicacion> = await conn.Publicar.findAll({
-      // limit: Number(limit) > 15 ? 15 : limit,
-      // offset: offset,
+      limit: 10,
+      offset: Number(offset),
       where: {
         userId: tokenData.id,
       },
-      // include: await conn.User,
+      order: [['createdAt', 'DESC']],
     });
     return publicacionUser;
   } catch (e) {
