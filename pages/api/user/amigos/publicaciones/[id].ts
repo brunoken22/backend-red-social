@@ -1,29 +1,27 @@
 import {NextApiRequest, NextApiResponse} from 'next';
-import {getAmigo} from '@/lib/controllers/amigo';
 const methods = require('micro-method-router');
 import {authMiddelware, handlerCors} from '@/lib/middleware';
 import {apiHandler} from '@/lib/handler';
+import {getPubliAmigo} from '@/lib/controllers/amigo';
 type Token = {
   id: number;
 };
-
-async function handlerObtenerAmigoId(
+async function handlerObtenerPublicaciones(
   req: NextApiRequest,
   res: NextApiResponse,
   token: Token
 ) {
   try {
-    const {id} = req.query;
-    const amigo: any = await getAmigo(Number(id), token);
-    if (!amigo.user.id) res.json(false);
-    return res.json(amigo);
-  } catch (e) {
-    return res.json(e);
+    const {offset, id} = req.query;
+    const publicacion = await getPubliAmigo(id, offset as string);
+    return res.json(publicacion);
+  } catch {
+    return res.json({message: 'Token Incorrecto'});
   }
 }
 
 const met = methods({
-  get: handlerObtenerAmigoId,
+  get: handlerObtenerPublicaciones,
 });
 
 const conect = apiHandler(met);
