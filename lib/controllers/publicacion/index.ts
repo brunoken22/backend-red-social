@@ -1,6 +1,6 @@
 import {cloudinary} from '@/lib/cloudinary';
 import {conn} from '@/lib/models/conn';
-import {Sequelize} from 'sequelize';
+import {Op, Sequelize} from 'sequelize';
 
 type Data = {
   description: string;
@@ -9,11 +9,9 @@ type Data = {
   comentarios: any;
   fecha: string;
 };
-
 type Token = {
   id: number;
 };
-
 type Comentario = {
   fullName: string;
   description: string;
@@ -27,7 +25,7 @@ type Publicacion = {
   like: number;
   img: string;
   fecha: string;
-  comentarios: [];
+  comentarios: any[];
 };
 export type DataLike = {
   id: number;
@@ -207,5 +205,70 @@ export async function getPublicacionId(id: string) {
     return publicacion;
   } catch (e) {
     return e;
+  }
+}
+
+export async function NotiFicacionesUser(tokenData: Token, offset: string) {
+  try {
+    let publicacion;
+    if (offset == '0') {
+      publicacion = await conn.Publicar.findAll({
+        limit: 15,
+        offset: Number(offset),
+        where: {
+          userId: tokenData.id,
+          open: false,
+        },
+        order: [['createdAt', 'DESC']],
+      });
+    } else {
+      publicacion = await conn.Publicar.findAll({
+        limit: 15,
+        offset: Number(offset),
+        where: {
+          userId: tokenData.id,
+          open: true,
+        },
+        order: [['createdAt', 'DESC']],
+      });
+    }
+    console.log('sddada', publicacion.length);
+
+    let dataResponse = publicacion.filter((item: Publicacion) => {
+      if (
+        item.comentarios[item.comentarios.length - 1].userId != tokenData.id
+      ) {
+        return item;
+      }
+    });
+    console.log('sddada', dataResponse.length);
+
+    if (dataResponse.length < 15) {
+      const additionalCount = 15 - dataResponse.length;
+      const additionalPublications = await conn.Publicar.findAll({
+        limit: additionalCount,
+        where: {
+          userId: tokenData.id,
+          open: true, // Cambia a false si deseas cualquier otro
+          comentarios: {
+            [Op.in]: dataResponse,
+          },
+        },
+        order: [['createdAt', 'DESC']],
+      });
+      console.log('sddada', additionalPublications.length);
+
+      dataResponse = dataResponse.concat(additionalPublications);
+      console.log('sddada', dataResponse.length);
+    }
+
+    if (!dataResponse) {
+      return [];
+    }
+    console.log('sddada', dataResponse.length);
+
+    return dataResponse;
+  } catch (e) {
+    return false;
   }
 }

@@ -78,8 +78,6 @@ export async function getAmigo(id: number, token: Token) {
   }
 }
 export async function getPubliAmigo(token: any, offset: string) {
-  console.log(token);
-
   const publicaciones = await getAllPulicacionUser({id: token}, offset);
   if (publicaciones) {
     return publicaciones;

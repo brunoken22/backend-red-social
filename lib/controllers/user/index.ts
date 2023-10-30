@@ -61,6 +61,7 @@ export async function modUser(tokenData: Token, data: Data) {
     let imagenUrl;
     if (data.img) {
       imagenUrl = await cloudinary.v2.uploader.upload(data.img, {
+        transformation: [{quality: 'auto', width: 500, crop: 'fill'}],
         resource_type: 'image',
         discard_original_filename: true,
         format: 'webp',
@@ -265,7 +266,6 @@ export async function getAllUser(tokenData: Token) {
       ...solicitudIdsReci,
     ];
   }
-  console.log(diferUsers);
   const usersAll = await conn.User.findAll({
     where: {
       id: {
@@ -293,7 +293,6 @@ export async function chatAmigo(tokenData: Token, data: Rooms) {
     return e;
   }
 }
-
 export async function searchUser(name: string, tokenData: Token) {
   const resultData = index.search(name);
   return resultData;
