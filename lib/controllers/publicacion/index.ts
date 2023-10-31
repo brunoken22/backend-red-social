@@ -1,6 +1,8 @@
 import {cloudinary} from '@/lib/cloudinary';
 import {conn} from '@/lib/models/conn';
+import {off} from 'process';
 import {Op, Sequelize} from 'sequelize';
+import {getJSDocReturnType} from 'typescript';
 
 type Data = {
   description: string;
@@ -211,63 +213,53 @@ export async function getPublicacionId(id: string) {
 export async function NotiFicacionesUser(tokenData: Token, offset: string) {
   try {
     let publicacion;
-    if (offset == '0') {
-      publicacion = await conn.Publicar.findAll({
-        limit: 15,
-        offset: Number(offset),
-        where: {
-          userId: tokenData.id,
-          open: false,
-        },
-        order: [['createdAt', 'DESC']],
-      });
-    } else {
-      publicacion = await conn.Publicar.findAll({
-        limit: 15,
-        offset: Number(offset),
-        where: {
-          userId: tokenData.id,
-          open: true,
-        },
-        order: [['createdAt', 'DESC']],
-      });
-    }
-    console.log('sddada', publicacion.length);
-
-    let dataResponse = publicacion.filter((item: Publicacion) => {
-      if (
-        item.comentarios[item.comentarios.length - 1].userId != tokenData.id
-      ) {
-        return item;
-      }
+    publicacion = await conn.Publicar.findAll({
+      limit: 15,
+      offset: Number(offset),
+      where: {
+        userId: tokenData.id,
+        open: true,
+      },
+      order: [['createdAt', 'DESC']],
     });
-    console.log('sddada', dataResponse.length);
+    let newOffset = Number(offset);
 
-    if (dataResponse.length < 15) {
-      const additionalCount = 15 - dataResponse.length;
-      const additionalPublications = await conn.Publicar.findAll({
-        limit: additionalCount,
-        where: {
-          userId: tokenData.id,
-          open: true, // Cambia a false si deseas cualquier otro
-          comentarios: {
-            [Op.in]: dataResponse,
+    if (publicacion.length < 15) {
+      let cuentaAtras = async () => {
+        if (publicacion.length >= 15) {
+          return;
+        }
+        const additionalCount = 15 - publicacion.length;
+        const additionalPublications = await conn.Publicar.findAll({
+          limit: additionalCount,
+          offset: newOffset,
+          where: {
+            userId: tokenData.id,
+            open: false,
           },
-        },
-        order: [['createdAt', 'DESC']],
-      });
-      console.log('sddada', additionalPublications.length);
-
-      dataResponse = dataResponse.concat(additionalPublications);
-      console.log('sddada', dataResponse.length);
+          order: [['createdAt', 'DESC']],
+        });
+        if (additionalPublications.length < 1) {
+          return;
+        }
+        let dataResponse = additionalPublications.filter(
+          (item: Publicacion) => {
+            if (
+              item.comentarios.filter(
+                (item: any) => item.userId != tokenData.id
+              ).length > 0
+            ) {
+              return item;
+            }
+          }
+        );
+        newOffset = newOffset + 15;
+        publicacion = publicacion!.concat(dataResponse);
+        return cuentaAtras();
+      };
+      await cuentaAtras();
     }
-
-    if (!dataResponse) {
-      return [];
-    }
-    console.log('sddada', dataResponse.length);
-
-    return dataResponse;
+    return {publicacion, offset: newOffset};
   } catch (e) {
     return false;
   }
