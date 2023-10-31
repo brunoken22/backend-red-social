@@ -19,7 +19,7 @@ async function connection() {
     pool: {
       max: 1,
       min: 0,
-      idle: 500,
+      idle: 50,
     },
   });
   const serviceAccount = JSON.parse(process.env.FIREBASE_CONNECTION as string);
