@@ -1,8 +1,6 @@
 import {cloudinary} from '@/lib/cloudinary';
 import {conn} from '@/lib/models/conn';
-import {Op, Sequelize} from 'sequelize';
-import {getAllPulicacionRedAmigos} from '../publicacion';
-import {getAllAmigos} from '../amigo';
+import {Op} from 'sequelize';
 import {nanoid} from 'nanoid';
 import {index} from '@/lib/algolia';
 export type Solicitud = {
@@ -146,29 +144,39 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
   try {
     const userData = await conn.User.findByPk(tokenData.id);
     const amigoIdData = await conn.User.findByPk(data.amigoId);
+    let result = [];
     const existeComun = userData
       ?.get('rtdb')
       ?.some((item: string) => amigoIdData.get('rtdb')?.includes(item));
-
+    const users = [{userId: data.amigoId}, {userId: tokenData.id}];
+    const idRoom = nanoid(10);
     if (!existeComun) {
-      const idRoom = nanoid(10);
-      const usersCollection = conn.firebaseRTDB.ref('/rooms/' + idRoom);
+      const usersCollection = await conn.firebaseRTDB.ref('/rooms/' + idRoom);
       await usersCollection.set({
         userId: userData.get('id'),
         amigoId: data.amigoId,
       });
-      await conn.User.update(
+    }
+    let count = 1;
+
+    for (let i of users) {
+      const rtdbUser = userData.get('rtdb');
+      const amigosUser = userData.get('amigos');
+      const newRtdbUser = rtdbUser.push(idRoom);
+      const newAmigosUser = [...amigosUser, users[count].userId];
+      const dataModi = await conn.User.update(
         {
-          rtdb: Sequelize.literal(`array_append("rtdb",'${idRoom}')`),
+          rtdb: !existeComun ? newRtdbUser : amigosUser,
+          amigos: newAmigosUser,
         },
         {
           where: {
-            id: {
-              [Op.in]: [tokenData.id, data.amigoId],
-            },
+            id: i.userId,
           },
         }
       );
+      result.push(dataModi);
+      count--;
     }
 
     const solicitud = await conn.SolicitudAmistad.update(
@@ -181,30 +189,10 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
       }
     );
     if (solicitud) {
-      const ids = [{user: tokenData.id}, {user: data.amigoId}];
-      const user1 = await conn.User.update(
-        {amigos: Sequelize.literal(`array_append("amigos", ${ids[1].user})`)},
-        {
-          where: {
-            id: ids[0].user,
-          },
-        }
-      );
-      const user2 = await conn.User.update(
-        {amigos: Sequelize.literal(`array_append("amigos", ${ids[0].user})`)},
-        {
-          where: {
-            id: ids[1].user,
-          },
-        }
-      );
-      if (user1 && user2) {
-        return 'Ahora son Amigos';
-      }
+      return {tipo: 'Ahora son Amigos', result};
     }
     return false;
   } catch (e) {
-    console.log(e);
     return e;
   }
 }

@@ -1,31 +1,39 @@
 import {conn} from '@/lib/models/conn';
-import {Op, Sequelize} from 'sequelize';
-import {Solicitud, Data, Token, getUser} from '../user';
+import {Op} from 'sequelize';
+import {Solicitud, Token} from '../user';
 import {getAllPulicacionUser} from '../publicacion';
 
 export async function eliminarAmigo(tokenData: Token, data: Solicitud) {
-  const user1 = await conn.User.update(
-    {amigos: conn.sequelize?.literal(`array_remove(amigos, ${data.userId})`)},
-    {
-      where: {
-        id: tokenData.id,
-      },
+  try {
+    let complete = [];
+    let count = 1;
+    const users = [{userId: data.userId}, {userId: tokenData.id}];
+    for (let i of users) {
+      const userData = await conn.User.findByPk(i.userId);
+      const amigosUser = userData.get('amigos');
+      const newAmigos = amigosUser.filter(
+        (item: number) => item != users[count].userId
+      );
+      const result = await conn.User.update(
+        {
+          amigos: newAmigos,
+        },
+        {
+          where: {
+            id: i.userId,
+          },
+        }
+      );
+      complete.push(result);
+      count--;
     }
-  );
-  const user2 = await conn.User.update(
-    {
-      amigos: conn.sequelize.literal(`array_remove(amigos, ${tokenData.id})`),
-    },
-    {
-      where: {
-        id: data.userId,
-      },
+    if (complete.length) {
+      return complete;
     }
-  );
-  if (user1 && user2) {
-    return {user1, user2};
+    return false;
+  } catch (e) {
+    return e;
   }
-  return [];
 }
 
 export async function getAllAmigos(
@@ -79,6 +87,7 @@ export async function getAmigo(id: number, token: Token) {
 }
 export async function getPubliAmigo(token: any, offset: string) {
   const publicaciones = await getAllPulicacionUser({id: token}, offset);
+
   if (publicaciones) {
     return publicaciones;
   }
