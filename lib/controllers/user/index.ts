@@ -1,8 +1,6 @@
 import {cloudinary} from '@/lib/cloudinary';
 import {conn} from '@/lib/models/conn';
 import {Op, Sequelize} from 'sequelize';
-import {getAllPulicacionRedAmigos} from '../publicacion';
-import {getAllAmigos} from '../amigo';
 import {nanoid} from 'nanoid';
 import {index} from '@/lib/algolia';
 export type Solicitud = {
@@ -22,7 +20,6 @@ export type Data = {
   img: string;
   amigos: [];
 };
-
 export type Token = {
   id: number;
 };
