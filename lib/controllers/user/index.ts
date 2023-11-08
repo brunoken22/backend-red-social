@@ -149,6 +149,7 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
     const existeComun = userData
       ?.get('rtdb')
       ?.some((item: string) => amigoIdData.get('rtdb')?.includes(item));
+    const users = [{userId: data.userId}, {userId: tokenData.id}];
 
     if (!existeComun) {
       const idRoom = nanoid(10);
@@ -157,6 +158,23 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
         userId: userData.get('id'),
         amigoId: data.amigoId,
       });
+      for (let i of users) {
+        const userData = await conn.User.findByPk(i.userId);
+        const rtdbUser = userData.get('rtdb');
+        const newRtdbUser = rtdbUser.push(idRoom);
+
+        await conn.User.update(
+          {
+            rtdb: newRtdbUser,
+          },
+          {
+            where: {
+              id: i.userId,
+            },
+          }
+        );
+      }
+
       await conn.User.update(
         {
           rtdb: Sequelize.literal(`array_append("rtdb",'${idRoom}')`),
@@ -202,9 +220,10 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
         return 'Ahora son Amigos';
       }
     }
-    return false;
+    // return false;
+    let complete = [];
+    let count = 1;
   } catch (e) {
-    console.log(e);
     return e;
   }
 }
