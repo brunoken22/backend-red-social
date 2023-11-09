@@ -86,7 +86,7 @@ export async function getAllPulicacionRedAmigos(
     const getUserRes = await conn.User.findOne({
       where: {id: tokenData.id},
     });
-    if (getUserRes.amigos.length > 0) {
+    if (getUserRes.amigos) {
       const publicacionAll: Array<Publicacion> = await conn.Publicar.findAll({
         limit: 10,
         offset: Number(offset),
@@ -109,7 +109,11 @@ export async function getAllPulicacionRedAmigos(
       },
       order: [['createdAt', 'DESC']],
     });
-    return publicacionUser;
+    console.log(publicacionUser.length);
+    if (publicacionUser.length) {
+      return publicacionUser;
+    }
+    return [];
   } catch (e) {
     return e;
   }
@@ -262,5 +266,22 @@ export async function NotiFicacionesUser(tokenData: Token, offset: string) {
     return {publicacion, offset: newOffset};
   } catch (e) {
     return false;
+  }
+}
+
+export async function deletePublicacion(tokenData: Token, id: string) {
+  try {
+    const publicacion = await conn.Publicar.destroy({
+      where: {
+        id,
+        userId: tokenData.id,
+      },
+    });
+    if (!publicacion) {
+      return false;
+    }
+    return publicacion;
+  } catch (e) {
+    return e;
   }
 }

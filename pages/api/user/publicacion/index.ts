@@ -2,6 +2,7 @@ import {NextApiRequest, NextApiResponse} from 'next';
 import {
   createPublicacion,
   getAllPulicacionUser,
+  deletePublicacion,
 } from '@/lib/controllers/publicacion';
 const methods = require('micro-method-router');
 import {authMiddelware, handlerCors} from '@/lib/middleware';
@@ -37,9 +38,23 @@ async function handlerObtenerPubli(
   }
 }
 
+async function handlerDeletePubli(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  token: Token
+) {
+  try {
+    const {id} = req.body;
+    const publicacion = await deletePublicacion(token, id as string);
+    return res.json(publicacion);
+  } catch {
+    return res.json({message: 'Token Incorrecto'});
+  }
+}
 const met = methods({
   post: handlerCreatePubli,
   get: handlerObtenerPubli,
+  delete: handlerDeletePubli,
 });
 
 const conect = apiHandler(met);
