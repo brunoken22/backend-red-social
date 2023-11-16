@@ -93,6 +93,9 @@ export async function solicitudDeAmistad(tokenData: Token, data: Solicitud) {
         userId: tokenData.id,
       },
     });
+    console.log(solicitudUser);
+    console.log(create);
+
     if (!create) return 'Ya existe solicitud';
     return solicitudUser;
   } catch (e) {
@@ -146,7 +149,7 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
     const existeComun = userData
       ?.get('rtdb')
       ?.some((item: string) => amigoIdData.get('rtdb')?.includes(item));
-    const users = [{userId: data.userId}, {userId: tokenData.id}];
+    const users = [{userId: data.amigoId}, {userId: tokenData.id}];
 
     if (!existeComun) {
       const idRoom = nanoid(10);
@@ -158,11 +161,11 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
       for (let i of users) {
         const userData = await conn.User.findByPk(i.userId);
         const rtdbUser = userData.get('rtdb');
-        const newRtdbUser = rtdbUser.push(idRoom);
+        rtdbUser.push(idRoom);
 
         await conn.User.update(
           {
-            rtdb: newRtdbUser,
+            rtdb: rtdbUser,
           },
           {
             where: {
@@ -171,19 +174,6 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
           }
         );
       }
-
-      await conn.User.update(
-        {
-          rtdb: Sequelize.literal(`array_append("rtdb",'${idRoom}')`),
-        },
-        {
-          where: {
-            id: {
-              [Op.in]: [tokenData.id, data.amigoId],
-            },
-          },
-        }
-      );
     }
 
     const solicitud = await conn.SolicitudAmistad.update(
@@ -217,9 +207,7 @@ export async function aceptarSolicitud(tokenData: Token, data: Solicitud) {
         return 'Ahora son Amigos';
       }
     }
-    // return false;
-    let complete = [];
-    let count = 1;
+    return false;
   } catch (e) {
     return e;
   }
